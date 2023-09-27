@@ -6,7 +6,7 @@ require('dotenv').config()
 
 const Person = require('./models/person')
 
-morgan.token('post-body', (req, res) => {
+morgan.token('post-body', (req) => {
   if(req.method === 'POST'){
     return JSON.stringify(req.body)
   }else{
@@ -21,15 +21,15 @@ app.use(morgan(':method :url :status :response-time ms - :res[content-length] - 
 
 app.get('/info', (request, response) => {
   Person.find({})
-  .then(contacts => {
-    const count = contacts.length
-    const date = new Date()
-    const currentTime = date.toString()
-    response.send(`
+    .then(contacts => {
+      const count = contacts.length
+      const date = new Date()
+      const currentTime = date.toString()
+      response.send(`
       <p>Phonebook has info for ${count}</p> 
       <p>${currentTime}</p>
     `)
-  })
+    })
 })
 
 app.get('/api/persons', (request, response) => {
@@ -37,21 +37,19 @@ app.get('/api/persons', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
-
   Person.findById(request.params.id)
-  .then(contact => {
-    if(contact){
-      response.json(contact)
-    }else{
-      response.status(403).end()
-    }
-  })
-  .catch(error => next(error))
-
+    .then(contact => {
+      if(contact){
+        response.json(contact)
+      }else{
+        response.status(403).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response, next) => {
-  const body = request.body 
+  const body = request.body
 
   if(!body.name){
     return response.status(400).json({
@@ -71,32 +69,32 @@ app.post('/api/persons', (request, response, next) => {
   })
 
   contact.save()
-  .then(savedContact => {
-    response.json(savedContact)
-  })
-  .catch(error => next(error))
+    .then(savedContact => {
+      response.json(savedContact)
+    })
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-  const body = request.body 
+  const body = request.body
   const contact = {
     name: body.name,
-    number: body.number 
+    number: body.number
   }
 
   Person.findByIdAndUpdate(request.params.id, contact, {new: true, runValidators: true, context: 'query'})
-  .then(updatedContact => {
-    response.json(updatedContact)
-  })
-  .catch(error => next(error))
+    .then(updatedContact => {
+      response.json(updatedContact)
+    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
-  .then(result => {
-    response.status(204).end()
-  })
-  .catch(error => next(error))
+    .then(() => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
@@ -119,7 +117,7 @@ const errorHandler = (error, request, response, next) => {
 
 app.use(errorHandler)
 
-const PORT = process.env.PORT 
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
